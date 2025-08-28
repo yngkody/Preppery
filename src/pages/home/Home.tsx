@@ -1,4 +1,4 @@
-import React, { ReactNode, useMemo } from "react";
+import React, { useMemo } from "react";
 import { useExcel } from "../../context/excel/ExcelContext";
 import "./home.scss";
 import {
@@ -34,22 +34,7 @@ const Sparkline: React.FC<{ data: { x: any; y: number }[] }> = ({ data }) => (
   </div>
 );
 
-/** Small KPI card */
-interface CardProps {
-  title: string;
-  value?: string | number;
-  children?: ReactNode;
-}
-const Card: React.FC<CardProps> = ({ title, value, children }) => (
-  <div className="bg-neutral-900/0 text-white rounded-xl">
-    <div style={{ fontSize: 12, opacity: 0.85, marginBottom: 4 }}>{title}</div>
-    {value !== undefined ? (
-      <div style={{ fontSize: 20, fontWeight: 700 }}>{value}</div>
-    ) : (
-      children
-    )}
-  </div>
-);
+
 
 /** SVG defs for gradients (used by Recharts bars) */
 const ChartDefs = () => (
