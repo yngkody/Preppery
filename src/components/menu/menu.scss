@@ -1,0 +1,58 @@
+.menu {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  background-color: #1e1d1d;
+  height: 100%;
+  overflow-y: auto;
+
+  .section {
+    display: flex;
+    flex-direction: column;
+
+    .title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #888;
+      margin: 20px 0 10px;
+    }
+
+    .menuItem {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      text-decoration: none;
+      color: #fff;
+      font-weight: 500;
+      transition: all 0.2s;
+
+      &:hover {
+        background: linear-gradient(90deg, #9968f4, #7052f4);
+        color: #fff;
+      }
+
+      &.active {
+        background: linear-gradient(90deg, #9968f4, #7052f4);
+        color: #fff;
+        font-weight: 700;
+
+        .menuIcon {
+          color: #fff;
+        }
+      }
+
+      .menuIcon {
+        width: 20px;
+        height: 20px;
+        color: currentColor;
+      }
+
+      .menuItemTitle {
+        font-size: 14px;
+      }
+    }
+  }
+}

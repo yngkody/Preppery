@@ -1,0 +1,150 @@
+@import "../../styles/responsive.scss";
+
+:root {
+  --paper: #fff;
+  --ink: #0f172a;            /* slate-900 */
+  --ink-dim: #475569;        /* slate-600 */
+  --line: #e2e8f0;           /* slate-200 */
+  --chip-bg: #f1f5f9;        /* slate-100 */
+  --chip-ink: #334155;       /* slate-700 */
+  --accent: #7c5cff;         /* your accent */
+  --accent2: #4cc9f0;
+
+  /* status hues */
+  --ok1: #34d399; --ok2: #16a34a;
+  --warn1: #f59e0b; --warn2: #fb7185;
+  --bad1: #fb7185; --bad2: #ef4444;
+}
+
+.upload-page {
+  padding: 20px;
+
+  .paper {
+    background: var(--paper);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  /* ===== Toolbar ===== */
+  .table-toolbar {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--line);
+    background: linear-gradient(180deg, #fff, #fafafa);
+
+    .title { font-weight: 700; font-size: 16px; margin-right: auto; }
+
+    .search input {
+      width: 280px;
+      padding: 9px 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      font-size: 13px;
+      outline: none;
+      background: #fff;
+    }
+
+    /* Gradient buttons */
+    .gbtn {
+      border: 0;
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 12px;
+      color: #fff;
+      cursor: pointer;
+      background-image: linear-gradient(90deg, var(--accent), var(--accent2));
+      box-shadow: 0 6px 16px rgba(124, 92, 255, 0.25);
+      transition: transform .1s ease, box-shadow .2s ease, opacity .2s ease;
+      white-space: nowrap;
+    }
+    .gbtn:hover { transform: translateY(-1px); box-shadow: 0 10px 22px rgba(124,92,255,.35); }
+    .gbtn:active { transform: translateY(0); }
+
+    /* status gradient variants */
+    .gbtn.ok    { background-image: linear-gradient(90deg, var(--ok1), var(--ok2)); box-shadow: 0 6px 16px rgba(22,163,74,.25); }
+    .gbtn.warn  { background-image: linear-gradient(90deg, var(--warn1), var(--warn2)); box-shadow: 0 6px 16px rgba(245,158,11,.25); }
+    .gbtn.bad   { background-image: linear-gradient(90deg, var(--bad1), var(--bad2)); box-shadow: 0 6px 16px rgba(239,68,68,.25); }
+    .gbtn.ghost {
+      color: var(--accent);
+      background: #fff;
+      border: 1px solid var(--line);
+      box-shadow: none;
+    }
+    .gbtn.ghost:hover { background: #fbfdff; }
+
+    .divider { width: 1px; height: 26px; background: var(--line); margin: 0 4px; }
+  }
+
+  /* ===== Filter tray (collapsible) ===== */
+  .filters {
+    border-bottom: 1px solid var(--line);
+    padding: 12px 14px;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(200px, 1fr));
+    gap: 12px;
+
+    @include lg { grid-template-columns: repeat(2, 1fr); }
+    @include md { grid-template-columns: 1fr; }
+
+    .field {
+      display: grid;
+      gap: 6px;
+      label { font-size: 12px; color: var(--ink-dim); }
+      select, input {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 8px 10px;
+        font-size: 13px;
+        background: #fff;
+      }
+    }
+  }
+
+  /* ===== Table ===== */
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 13px;
+  }
+  thead th {
+    background: #fafafa;
+    color: var(--ink-dim);
+    text-align: left;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--line);
+    font-weight: 600;
+    position: sticky; top: 0; z-index: 1;
+  }
+  tbody td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: middle;
+  }
+  tbody tr:hover td { background: #fcfcff; }
+
+  .muted { color: var(--ink-dim); }
+
+  .status {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 8px; border-radius: 999px; font-size: 12px;
+    border: 1px solid transparent; color: #0b1424;
+  }
+  .ok   { background: #ecfdf5; border-color: #86efac; color: #166534; }
+  .warn { background: #fff7ed; border-color: #fdba74; color: #9a3412; }
+  .bad  { background: #fef2f2; border-color: #fca5a5; color: #7f1d1d; }
+
+  /* ===== Pager ===== */
+  .pager {
+    display: flex; gap: 8px; justify-content: flex-end; align-items: center;
+    padding: 10px 14px; background: #fff; border-top: 1px solid var(--line);
+    button, select {
+      border: 1px solid var(--line); background: #fff; border-radius: 8px;
+      padding: 6px 10px; font-size: 12px; cursor: pointer;
+    }
+  }
+}

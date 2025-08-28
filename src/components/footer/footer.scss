@@ -1,0 +1,17 @@
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 30px;
+  background-color: #000000;
+  font-family: "Inter", sans-serif;
+  color: #fff; // <-- add this to make text visible
+
+  span:first-child {
+    font-weight: bold;
+  }
+
+  span:last-child {
+    font-size: 14px;
+  }
+}
