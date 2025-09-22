@@ -1,232 +1,243 @@
-@import "../../styles/responsive.scss";
-
+/* Light, neutral palette + strong mobile behavior */
 :root {
-  --paper: #fff;
+  --paper: #ffffff;
   --ink: #0f172a;
   --ink-dim: #475569;
   --line: #e2e8f0;
   --chip-bg: #f1f5f9;
   --chip-ink: #334155;
   --accent: #7c5cff;
-  --accent2: #4cc9f0;
 
   --ok1: #34d399; --ok2: #16a34a;
-  --warn1: #f59e0b; --warn2: #fb7185;
-  --bad1: #fb7185; --bad2: #ef4444;
-
-  /* Controls */
-  --zoom: 1;          /* 0.75 to 1.5 range recommended */
-  --rowH: 40px;       /* row height control */
+  --warn1: #f59e0b; --warn2: #d97706;
+  --bad1: #ef4444; --bad2: #dc2626;
 }
-
-/* Uses your existing CSS vars:
-   --paper, --ink, --line, --accent, --ok1/2, --warn1/2, --bad1/2, etc. */
 
 .upload-page {
-  height: 100dvh;                 /* mobile-safe viewport */
-  padding: 12px;
+  padding: clamp(12px, 2vw, 20px);
+  background: #f8fafc;
+}
+
+.paper {
   background: var(--paper);
   color: var(--ink);
-}
-
-/* main card */
-.upload-page .paper {
-  background: var(--paper);
   border: 1px solid var(--line);
   border-radius: 14px;
-  overflow: hidden;               /* contain sticky headers shadow */
-  display: flex;
-  flex-direction: column;
-  min-height: calc(100dvh - 24px); /* page padding (12*2) */
+  box-shadow: 0 8px 20px rgba(2,6,23,.04);
+  overflow: hidden;
 }
 
-/* ===== top toolbar ===== */
+/* ---------- Toolbar ---------- */
+.toolbar-shell {
+  padding: 14px;
+  background: #eef2f6;
+  border-bottom: 1px solid var(--line);
+}
+
 .table-toolbar {
-  position: sticky;
-  top: 0;
-  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.table-toolbar .title {
+  font-weight: 700;
+  margin-right: 6px;
+}
+
+.spacer {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.pill input {
+  width: min(520px, 100%);
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: #fff;
+  outline: none;
+}
+
+.table-controls {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+@media (max-width: 900px) {
+  .table-controls {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* individual little controls */
+.ctl {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: calc(10px + env(safe-area-inset-top)) 12px 10px 12px;
-  background: color-mix(in oklab, var(--paper) 85%, #000 15%);
-  backdrop-filter: blur(8px);
-  border-bottom: 1px solid var(--line);
-  box-shadow: 0 1px 0 rgba(0,0,0,.02);
-
-  .title {
-    font-weight: 700;
-    font-size: 15px;
-    letter-spacing: .2px;
-  }
-
-  .divider {
-    width: 1px;
-    height: 22px;
-    background: var(--line);
-    margin: 0 4px;
-  }
-
-  .search {
-    min-width: 140px;
-  }
-  .search input {
-    width: 100%;
-    padding: 8px 10px;
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    background: var(--paper);
-    color: var(--ink);
-    font-size: 14px;
-  }
-}
-
-/* solid “pill” buttons matching your chips */
-.gbtn {
+  background: #ffffffaa;
+  backdrop-filter: blur(2px);
   border: 1px solid var(--line);
-  background: var(--chip-bg, #f1f5f9);
-  color: var(--chip-ink, #334155);
-  border-radius: 999px;
-  padding: 8px 12px;
-  font-weight: 600;
-  font-size: 13px;
+  border-radius: 10px;
+  padding: 8px 10px;
 }
-.gbtn.ghost { background: transparent; }
-.gbtn.ok   { background: var(--ok1);  color: #071b10; border-color: transparent; }
-.gbtn.warn { background: var(--warn1); color: #1b1007; border-color: transparent; }
-.gbtn.bad  { background: var(--bad1); color: #1b0707; border-color: transparent; }
+.ctl label { font-size: 12px; color: var(--ink-dim); width: 90px; }
+.ctl input[type="range"] { flex: 1; }
+.ctl span { font-size: 12px; color: var(--ink-dim); }
 
-/* ===== second control row ===== */
-.table-controls {
-  position: sticky;
-  top: calc(52px + env(safe-area-inset-top)); /* sits under toolbar on mobile */
-  z-index: 2;
+/* column chips */
+.columns {
   display: flex;
-  align-items: center;
   flex-wrap: wrap;
-  gap: 10px 12px;
-  padding: 10px 12px;
-  background: var(--paper);
+  gap: 8px;
+  align-items: center;
+}
+.columns .muted {
+  color: var(--ink-dim);
+  font-size: 12px;
+  margin-right: 4px;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--chip-bg);
+  color: var(--chip-ink);
+  font-size: 12px;
+  border: 1px solid var(--line);
+  user-select: none;
+}
+
+/* buttons */
+.gbtn {
+  --bg: #fff;
+  --bd: var(--line);
+  --fg: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--bd);
+  background: var(--bg);
+  color: var(--fg);
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.gbtn .badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  font-size: 12px;
+  background: #fff;
+  border: 1px solid var(--line);
+}
+
+.gbtn.ghost { --bg: #fff; }
+.gbtn.ok    { --bg: #e8fff5; --bd: #a7f3d0; --fg: #065f46; }
+.gbtn.warn  { --bg: #fff6e5; --bd: #fde68a; --fg: #92400e; }
+.gbtn.bad   { --bg: #ffecec; --bd: #fecaca; --fg: #991b1b; }
+.gbtn.accent{ --bg: #eef;   --bd: #c7c7ff; --fg: #3b33a7; }
+
+.gbtn.active {
+  box-shadow: inset 0 0 0 2px currentColor;
+}
+
+/* ---------- Upload area ---------- */
+.uploader-wrap {
+  padding: 14px;
   border-bottom: 1px solid var(--line);
-
-  .ctl {
-    display: inline-flex; align-items: center; gap: 8px;
-    font-size: 12px; color: var(--ink-dim, #475569);
-  }
-  .ctl input[type="range"] { width: 120px; }
-  .col-visibility { display: inline-flex; flex-wrap: wrap; gap: 6px; }
-  .chip {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 6px 10px; border-radius: 999px;
-    background: var(--chip-bg); color: var(--chip-ink);
-    font-size: 12px;
-    border: 1px solid var(--line);
-  }
-  .chip input { accent-color: var(--accent); }
-  .muted { color: var(--ink-dim); }
 }
 
-/* ===== filters tray ===== */
-.filters {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0,1fr));
-  gap: 12px;
-  padding: 12px;
-  border-bottom: 1px solid var(--line);
-  background: var(--paper);
-
-  .field { display: grid; gap: 6px; }
-  label { font-size: 12px; color: var(--ink-dim); }
-  select {
-    padding: 8px 10px; border: 1px solid var(--line);
-    border-radius: 10px; background: var(--paper); color: var(--ink);
-  }
-}
-
-/* ===== upload controls section ===== */
-.upload-page .paper > div[style*="padding: 14px"] {
-  padding: 12px;                  /* keep your existing wrapper but tighter on mobile */
-}
-
-/* ===== table ===== */
+/* ---------- Table ---------- */
 .table-wrap {
-  --zoom: 1;
-  --rowH: 40px;
-  flex: 1 1 auto;
-  overflow: auto;                 /* vertical scroll */
+  /* critical for mobile: allow horizontal scroll and zoom scaling */
+  overflow: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 0 12px 16px 12px;
+  padding: 6px 14px 16px;
+  background: #fff;
 }
 
-/* horizontal scroll on small screens */
-@media (max-width: 900px) {
-  .table-wrap { overflow: auto; }
-  .table-wrap table { min-width: 720px; } /* prevent cramped columns */
+/* The inner container gets scaled; width: max-content keeps natural table width */
+.table-inner {
+  display: inline-block;
+  width: max-content;
+  transform: scale(var(--zoom));
+  transform-origin: 0 0;
 }
 
-.table-wrap table {
-  width: 100%;
+/* Base table styles */
+table {
   border-collapse: separate;
   border-spacing: 0;
-  transform: scale(var(--zoom));
-  transform-origin: top left;
-}
-
-thead th {
-  position: sticky;
-  top: calc(52px + 42px + env(safe-area-inset-top)); /* toolbar + controls */
-  z-index: 1;
-  background: var(--paper);
-  border-bottom: 1px solid var(--line);
-  text-align: left;
-  padding: 10px;
-  font-size: 12px;
-  color: var(--ink-dim);
-}
-tbody td {
-  padding: 10px;
-  border-bottom: 1px solid var(--line);
-  height: var(--rowH);
+  min-width: 720px; /* gives a sane baseline; the container will scroll on small screens */
   font-size: 14px;
   color: var(--ink);
 }
 
-/* column resizer handle */
-.resizer {
-  position: absolute;
-  right: -4px; top: 0; bottom: 0;
-  width: 8px; cursor: col-resize; touch-action: none;
+thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #f8fafc;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  font-weight: 700;
+  padding: 10px 12px;
+  white-space: nowrap;
 }
 
-/* status pills (Fulfillment) */
-.status { padding: 4px 8px; border-radius: 999px; font-weight: 600; font-size: 12px; }
-.status.ok   { background: color-mix(in oklab, var(--ok1) 85%, white 15%);   color:#062a18; }
-.status.warn { background: color-mix(in oklab, var(--warn1) 85%, white 15%); color:#2a1d06; }
-.status.bad  { background: color-mix(in oklab, var(--bad1) 85%, white 15%);  color:#2a0606; }
+tbody td {
+  padding: 0 12px;
+  height: var(--rowH);
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+  background: #fff;
+}
 
-/* ===== mobile stacking tweaks ===== */
+.muted { color: var(--ink-dim); }
+
+.status {
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid transparent;
+}
+.status.ok   { background: #e8fff5; color: #065f46; border-color: #a7f3d0; }
+.status.warn { background: #fff6e5; color: #92400e; border-color: #fde68a; }
+.status.bad  { background: #ffecec; color: #991b1b; border-color: #fecaca; }
+
+/* column resizer hit area */
+.resizer {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  cursor: col-resize;
+}
+
+/* Empty state */
+.empty-hint {
+  padding: 40px 14px 60px;
+  text-align: center;
+  color: var(--ink-dim);
+}
+
+/* ---------- Mobile polish ---------- */
 @media (max-width: 640px) {
-  .table-toolbar {
-    flex-wrap: wrap;
-    row-gap: 8px;
-    .title { flex: 1 1 100%; font-size: 16px; }
-    .divider { display: none; }
-    .gbtn { padding: 8px 10px; font-size: 12px; }
-    .search { flex: 1 1 100%; }
-  }
-
-  .table-controls {
-    top: auto;                    /* let headers compute stickiness below */
-    position: static;
-    padding-top: 8px;
-    .ctl input[type="range"] { width: 100px; }
-  }
-
-  .filters {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  thead th {                      /* recompute sticky top for small screens */
-    top: calc(52px + env(safe-area-inset-top));  /* only top toolbar sticks */
-  }
+  .gbtn { padding: 8px 10px; }
+  thead th, tbody td { padding: 8px 10px; }
+  table { min-width: 640px; } /* match common phone width for nicer scale */
 }
