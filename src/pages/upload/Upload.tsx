@@ -155,7 +155,7 @@ const Upload: React.FC = () => {
     <div className="upload-page">
       <div className="paper">
         {/* ===== Toolbar (solid buttons) ===== */}
-        <div className="table-toolbar">
+        <div className="table-toolbar" style={{minHeight: 52}}>  {/* keep as-is otherwise */}
           <div className="title">Upload & Items</div>
 
           <button
