@@ -13,8 +13,8 @@ body {
   font-weight: 400;
   height: 100vh;
   margin: 0;
-  background-color: #1e1d1d; /* dark gray for entire app */
-  color: #fff; /* optional: make text white */
+  background-color: #f5ecfc; /* dark gray for entire app */
+  color: #000000; /* optional: make text white */
 }
 
 a {
@@ -42,12 +42,12 @@ a {
   flex: 1;
   padding: 20px;
   overflow-y: auto;
-  background-color: #1e1d1d; /* same dark gray */
+  background-color: #ffffff; /* same dark gray */
 }
 
 /* Navbar */
 .navbar {
-  background-color: #1e1d1d; /* dark gray */
+  background-color: #ffffff; /* dark gray */
 }
 
 /* Footer */
@@ -55,5 +55,5 @@ a {
   padding: 15px 20px;
   display: flex;
   justify-content: space-between;
-  background-color: #1e1d1d; /* dark gray */
+  background-color: #ffffff; /* dark gray */
 }

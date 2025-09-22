@@ -19,7 +19,7 @@ import LoginPage from "./pages/login/Login";
 const Footer: React.FC = () => (
   <div className="footer">
     <span>admin</span>
-    <span>Preppery</span>
+    <span>PrepDeck</span>
   </div>
 );
 

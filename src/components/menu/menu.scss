@@ -2,9 +2,15 @@
   display: flex;
   flex-direction: column;
   padding: 20px;
-  background-color: #1e1d1d;
+  background-color: #f5f2f2;
   height: 100%;
   overflow-y: auto;
+
+  // Rounded corners + 3D outline effect
+  border-radius: 5px;
+  border: 1px solid #d9d9d9; // light gray border
+  box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.08), 
+              -2px -2px 6px rgba(255, 255, 255, 0.8);
 
   .section {
     display: flex;
@@ -23,25 +29,21 @@
       align-items: center;
       gap: 8px;
       padding: 8px 12px;
-      border-radius: 6px;
+      border-radius: 4px;
       text-decoration: none;
-      color: #fff;
+      color: #000000;
       font-weight: 500;
       transition: all 0.2s;
 
       &:hover {
-        background: linear-gradient(90deg, #9968f4, #7052f4);
+        background: #0066ff;
         color: #fff;
       }
 
       &.active {
-        background: linear-gradient(90deg, #9968f4, #7052f4);
+        background: #0066ff;
         color: #fff;
         font-weight: 700;
-
-        .menuIcon {
-          color: #fff;
-        }
       }
 
       .menuIcon {

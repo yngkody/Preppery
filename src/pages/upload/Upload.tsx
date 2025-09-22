@@ -8,9 +8,9 @@ import {
   getCoreRowModel,
   getFilteredRowModel,
   getSortedRowModel,
-  getPaginationRowModel,
-  SortingState,
   useReactTable,
+  VisibilityState,
+  ColumnSizingState,
 } from "@tanstack/react-table";
 
 /* ---------- Helpers ---------- */
@@ -45,7 +45,7 @@ const Upload: React.FC = () => {
   const { excelData } = useExcel();
   const rows = useMemo(() => normalizeRows(excelData || []), [excelData]);
 
-  // map raw rows -> tidy rows for the table
+  // base rows derived from raw excel rows (keep it close to source)
   const baseData = useMemo(() => {
     return rows.map((r) => ({
       item: str(r["Menu Item"]) || str(r["Item"]),
@@ -73,14 +73,14 @@ const Upload: React.FC = () => {
     [baseData]
   );
 
-  // gradient filter tray state
+  // filters
   const [showFilters, setShowFilters] = useState<boolean>(false);
-  const [statusFilter, setStatusFilter] = useState<"" | "Fulfilled" | "In Progress" | "Unfulfilled">("");
+  const [statusFilter, setStatusFilter] =
+    useState<"" | "Fulfilled" | "In Progress" | "Unfulfilled">("");
   const [producerFilter, setProducerFilter] = useState<string>("");
   const [eventFilter, setEventFilter] = useState<string>("");
   const [unitFilter, setUnitFilter] = useState<string>("");
 
-  // apply our manual filters before TanStack sorting/pagination
   const filteredData = useMemo(() => {
     return baseData.filter(row => {
       if (statusFilter && row.status !== statusFilter) return false;
@@ -91,9 +91,12 @@ const Upload: React.FC = () => {
     });
   }, [baseData, statusFilter, producerFilter, eventFilter, unitFilter]);
 
+  // table columns (resizable & hideable)
   const columns = useMemo<ColumnDef<any, any>[]>(() => [
     { accessorKey: "item", header: "Item" },
-    { accessorKey: "event", header: "Event", cell: (info) => <span className="muted">{info.getValue()}</span> },
+    { accessorKey: "event", header: "Event",
+      cell: (info) => <span className="muted">{info.getValue()}</span>
+    },
     { accessorKey: "producer", header: "Producer" },
     { accessorKey: "qty", header: "Qty" },
     { accessorKey: "unit", header: "Unit" },
@@ -108,19 +111,28 @@ const Upload: React.FC = () => {
     },
   ], []);
 
-  const [sorting, setSorting] = useState<SortingState>([]);
+  // column visibility + sizing state
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [columnSizing, setColumnSizing] = useState<ColumnSizingState>({});
+  const [columnResizeMode] = useState<"onChange" | "onEnd">("onChange");
+
+  const [sorting, setSorting] = useState<any>([]);
   const [globalFilter, setGlobalFilter] = useState("");
 
   const table = useReactTable({
     data: filteredData,
     columns,
-    state: { sorting, globalFilter },
+    state: { sorting, globalFilter, columnVisibility, columnSizing },
     onSortingChange: setSorting,
     onGlobalFilterChange: setGlobalFilter,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    // No pagination model -> show all rows
+    columnResizeMode,
+    onColumnSizingChange: setColumnSizing,
+    onColumnVisibilityChange: setColumnVisibility,
+    // global filter
     globalFilterFn: (row, colId, filterValue) => {
       const val = String(row.getValue(colId) ?? "").toLowerCase();
       return val.includes(String(filterValue).toLowerCase());
@@ -129,24 +141,33 @@ const Upload: React.FC = () => {
 
   const debouncedSearch = useDebouncedCallback((v) => setGlobalFilter(v), 150);
 
+  // UI controls
+  const [zoom, setZoom] = useState<number>(1);           // 0.75 - 1.5
+  const [rowH, setRowH] = useState<number>(40);          // px
+
+  // apply CSS variables
+  const wrapStyle: React.CSSProperties = {
+    ["--zoom" as any]: zoom,
+    ["--rowH" as any]: `${rowH}px`,
+  };
+
   return (
     <div className="upload-page">
       <div className="paper">
-        {/* ===== Toolbar with gradient buttons ===== */}
+        {/* ===== Toolbar (solid buttons) ===== */}
         <div className="table-toolbar">
           <div className="title">Upload & Items</div>
 
-          {/* Quick status gradient buttons */}
           <button
-            className={`gbtn ghost`}
-            onClick={() => { setStatusFilter(""); setProducerFilter(""); setEventFilter(""); setUnitFilter(""); }}
+            className="gbtn ghost"
+            onClick={() => { setStatusFilter(""); setProducerFilter(""); setEventFilter(""); setUnitFilter(""); setGlobalFilter(""); }}
             title="Clear all filters"
           >
             Clear
           </button>
           <div className="divider" />
           <button
-            className={`gbtn ok ${statusFilter === "Fulfilled" ? "" : ""}`}
+            className="gbtn ok"
             onClick={() => setStatusFilter(statusFilter === "Fulfilled" ? "" : "Fulfilled")}
           >
             Fulfilled
@@ -166,7 +187,6 @@ const Upload: React.FC = () => {
 
           <div className="divider" />
 
-          {/* Toggle filter tray */}
           <button className="gbtn" onClick={() => setShowFilters(v => !v)}>
             {showFilters ? "Hide filters" : "Show filters"}
           </button>
@@ -179,6 +199,48 @@ const Upload: React.FC = () => {
               defaultValue={globalFilter ?? ""}
               onChange={(e) => debouncedSearch(e.target.value)}
             />
+          </div>
+        </div>
+
+        {/* ===== Second row: zoom / row height / column visibility ===== */}
+        <div className="table-controls">
+          <div className="ctl">
+            <label>Zoom</label>
+            <input
+              type="range"
+              min={0.75}
+              max={1.5}
+              step={0.05}
+              value={zoom}
+              onChange={(e) => setZoom(parseFloat(e.target.value))}
+            />
+            <span>{Math.round(zoom * 100)}%</span>
+          </div>
+          <div className="ctl">
+            <label>Row height</label>
+            <input
+              type="range"
+              min={28}
+              max={64}
+              step={2}
+              value={rowH}
+              onChange={(e) => setRowH(parseInt(e.target.value))}
+            />
+            <span>{rowH}px</span>
+          </div>
+
+          <div className="col-visibility">
+            <span className="muted">Columns:</span>
+            {table.getAllLeafColumns().map((col) => (
+              <label key={col.id} className="chip" title="Toggle column">
+                <input
+                  type="checkbox"
+                  checked={col.getIsVisible()}
+                  onChange={col.getToggleVisibilityHandler()}
+                />
+                {col.columnDef.header as string}
+              </label>
+            ))}
           </div>
         </div>
 
@@ -226,70 +288,56 @@ const Upload: React.FC = () => {
           <UploadControls />
         </div>
 
-        {/* ===== Empty state ===== */}
-        {!rows.length && (
+        {/* ===== Table (no pagination) ===== */}
+        {rows.length > 0 ? (
+          <div className="table-wrap" style={wrapStyle as React.CSSProperties}>
+            <table>
+              <thead>
+                {table.getHeaderGroups().map((hg) => (
+                  <tr key={hg.id}>
+                    {hg.headers.map((h) => (
+                      <th
+                        key={h.id}
+                        style={{ width: h.getSize() }}
+                        onClick={h.column.getToggleSortingHandler()}
+                        title={h.column.getCanSort() ? "Sort" : ""}
+                      >
+                        {flexRender(h.column.columnDef.header, h.getContext())}
+                        {{
+                          asc: " ▲",
+                          desc: " ▼",
+                        }[h.column.getIsSorted() as string] ?? null}
+
+                        {/* column resizer */}
+                        {h.column.getCanResize() && (
+                          <div
+                            onMouseDown={h.getResizeHandler()}
+                            onTouchStart={h.getResizeHandler()}
+                            className="resizer"
+                          />
+                        )}
+                      </th>
+                    ))}
+                  </tr>
+                ))}
+              </thead>
+              <tbody>
+                {table.getRowModel().rows.map((row) => (
+                  <tr key={row.id}>
+                    {row.getVisibleCells().map((cell) => (
+                      <td key={cell.id} style={{ width: cell.column.getSize() }}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
           <div style={{ padding: 20, color: "#475569" }}>
             Upload a sheet to view items.
           </div>
-        )}
-
-        {/* ===== Table ===== */}
-        {!!rows.length && (
-          <>
-            <div style={{ overflow: "auto" }}>
-              <table>
-                <thead>
-                  {table.getHeaderGroups().map((hg) => (
-                    <tr key={hg.id}>
-                      {hg.headers.map((h) => (
-                        <th
-                          key={h.id}
-                          onClick={h.column.getToggleSortingHandler()}
-                          style={{ cursor: h.column.getCanSort() ? "pointer" : "default", whiteSpace: "nowrap" }}
-                          title={h.column.getCanSort() ? "Sort" : ""}
-                        >
-                          {flexRender(h.column.columnDef.header, h.getContext())}
-                          {{
-                            asc: " ▲",
-                            desc: " ▼",
-                          }[h.column.getIsSorted() as string] ?? null}
-                        </th>
-                      ))}
-                    </tr>
-                  ))}
-                </thead>
-                <tbody>
-                  {table.getRowModel().rows.map((row) => (
-                    <tr key={row.id}>
-                      {row.getVisibleCells().map((cell) => (
-                        <td key={cell.id}>
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="pager">
-              <span className="muted">
-                Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
-              </span>
-              <button onClick={() => table.setPageIndex(0)} disabled={!table.getCanPreviousPage()}>⏮</button>
-              <button onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>◀</button>
-              <button onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>▶</button>
-              <button onClick={() => table.setPageIndex(table.getPageCount() - 1)} disabled={!table.getCanNextPage()}>⏭</button>
-              <select
-                value={table.getState().pagination.pageSize}
-                onChange={(e) => table.setPageSize(Number(e.target.value))}
-              >
-                {[10, 20, 50, 100].map((n) => (
-                  <option key={n} value={n}>{n} / page</option>
-                ))}
-              </select>
-            </div>
-          </>
         )}
       </div>
     </div>

@@ -17,35 +17,22 @@ import {
   Area,
 } from "recharts";
 
-/* -------------------- Small sparkline -------------------- */
+/* -------------------- Small sparkline (solid color) -------------------- */
 const Sparkline: React.FC<{ data: { x: number; y: number }[] }> = ({ data }) => (
   <div className="sparkline" aria-hidden>
     <ResponsiveContainer width="100%" height="100%">
       <AreaChart data={data} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
-        <defs>
-          <linearGradient id="spark" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--accent-2)" stopOpacity={0.9} />
-            <stop offset="100%" stopColor="var(--accent-2)" stopOpacity={0.1} />
-          </linearGradient>
-        </defs>
-        <Area type="monotone" dataKey="y" stroke="var(--accent-2)" fill="url(#spark)" strokeWidth={2} />
+        <Area
+          type="monotone"
+          dataKey="y"
+          stroke="var(--accent-2)"
+          strokeWidth={2}
+          fill="var(--accent-2)"
+          fillOpacity={0.15}
+        />
       </AreaChart>
     </ResponsiveContainer>
   </div>
-);
-
-/* -------------------- Chart gradients -------------------- */
-const ChartDefs = () => (
-  <defs>
-    <linearGradient id="barGradientA" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stopColor="var(--accent-1)" />
-      <stop offset="100%" stopColor="var(--accent-2)" />
-    </linearGradient>
-    <linearGradient id="barGradientB" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stopColor="var(--accent-3)" />
-      <stop offset="100%" stopColor="var(--accent-4)" />
-    </linearGradient>
-  </defs>
 );
 
 /* -------------------- Helpers -------------------- */
@@ -59,7 +46,6 @@ const isoDay = (v: any): string | null => {
 const stripTags = (s: any) =>
   String(s ?? "").replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
 
-/* key normalization + fuzzy header detection */
 const canon = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
 const findKey = (keys: string[], aliases: string[], fuzzy: string[] = []) => {
   const ck = keys.map(k => ({ raw: k, c: canon(k) }));
@@ -89,7 +75,7 @@ const buildKeyMap = (sampleRow: Record<string, any> | undefined) => {
 };
 const pickBy = (row: Record<string, any>, key: string | null) => (key ? row?.[key] : null);
 
-/* label wrapping for axes */
+/* axis label wrapping */
 const wrapLabelLines = (value: string, maxChars = 10, maxLines = 3): string[] => {
   if (!value) return [""];
   const words = String(value).split(" ");
@@ -119,7 +105,7 @@ export const renderWrappedTick = (props: any, maxChars = 10, maxLines = 3) => {
   const totalH = lineHeight * lines.length;
   return (
     <g transform={`translate(${x},${y + 10})`}>
-      {lines.map((line, i) => (
+      {lines.map((line: string, i: number) => (
         <text key={i} x={0} y={i * lineHeight - totalH + lineHeight * lines.length} textAnchor="middle" fontSize={11} fill="#a9a9a9">
           {line}
         </text>
@@ -128,7 +114,6 @@ export const renderWrappedTick = (props: any, maxChars = 10, maxLines = 3) => {
   );
 };
 
-/* empty state */
 const NoData: React.FC<{ label?: string }> = ({ label = "No data" }) => (
   <div style={{ height: "100%", display: "grid", placeItems: "center", opacity: 0.6, fontSize: 14 }}>{label}</div>
 );
@@ -201,7 +186,6 @@ const Home: React.FC = () => {
     return Object.entries(map).map(([event, count]) => ({ event, count }));
   }, [rows, KEYMAP]);
 
-  /* top items with clean labels */
   const shortLabel = (s: string, max = 28) => (s.length <= max ? s : s.slice(0, max - 1) + "…");
   const topItemsForUnit = (unit: string, limit = 10) => {
     const map: Record<string, number> = {};
@@ -219,14 +203,23 @@ const Home: React.FC = () => {
   };
   const topEA = useMemo(() => topItemsForUnit("EA", 10), [rows, KEYMAP]);
 
-  const pctScheduled = kpis.total > 0 ? Math.round((kpis.scheduled / kpis.total) * 100) : 0;
+  /* Derived KPIs */
+  const pctScheduled = kpis.total ? Math.round((kpis.scheduled / kpis.total) * 100) : 0;
+  const busiestDay = useMemo(() => {
+    if (!itemsByDay.length) return null;
+    return itemsByDay.reduce((a, b) => (b.count > a.count ? b : a));
+  }, [itemsByDay]);
+  const topProducer = useMemo(() => {
+    if (!workloadByProducer.length) return null;
+    return workloadByProducer.reduce((a, b) => (b.count > a.count ? b : a));
+  }, [workloadByProducer]);
 
   /* early empty state */
   if (!rows.length) {
     return (
       <div className="home" style={{ padding: 16 }}>
         <div className="box empty">
-          Upload an Excel file on the <strong>Upload</strong> page to see Preppery KPIs and charts.
+          Upload an Excel file on the <strong>Upload</strong> page to see Prep Deck KPIs and charts.
         </div>
       </div>
     );
@@ -246,7 +239,6 @@ const Home: React.FC = () => {
       <section className="box kpis">
         <div className="panel-title">Overview</div>
         <div className="kpi-grid">
-          {/* Total line items */}
           <div className="metric">
             <div className="icon" aria-hidden>📦</div>
             <div className="meta">
@@ -256,7 +248,6 @@ const Home: React.FC = () => {
             <Sparkline data={itemsByDay.map((d, i) => ({ x: i, y: d.count }))} />
           </div>
 
-          {/* Unique menu items */}
           <div className="metric">
             <div className="icon" aria-hidden>🍽️</div>
             <div className="meta">
@@ -266,29 +257,26 @@ const Home: React.FC = () => {
             <Sparkline data={itemsByEvent.map((d, i) => ({ x: i, y: d.count }))} />
           </div>
 
-          {/* Scheduled */}
           <div className="metric">
             <div className="icon" aria-hidden>✅</div>
             <div className="meta">
-              <div className="label">Scheduled (count)</div>
+              <div className="label">Scheduled items</div>
               <div className="value">{kpis.scheduled}</div>
             </div>
           </div>
 
-          {/* Unscheduled */}
           <div className="metric">
             <div className="icon" aria-hidden>🕒</div>
             <div className="meta">
-              <div className="label">Unscheduled (count)</div>
+              <div className="label">Unscheduled items</div>
               <div className="value">{kpis.unscheduled}</div>
             </div>
           </div>
 
-          {/* Scheduled % */}
           <div className="metric span-2">
             <div className="icon" aria-hidden>🗓️</div>
             <div className="meta">
-              <div className="label">Scheduled completion</div>
+              <div className="label">Completion rate</div>
               <div className="value">{pctScheduled}%</div>
             </div>
             <div className="progress" role="progressbar" aria-valuenow={pctScheduled} aria-valuemin={0} aria-valuemax={100}>
@@ -296,7 +284,6 @@ const Home: React.FC = () => {
             </div>
           </div>
 
-          {/* Events */}
           <div className="metric">
             <div className="icon" aria-hidden>🎪</div>
             <div className="meta">
@@ -304,22 +291,39 @@ const Home: React.FC = () => {
               <div className="value">{kpis.events}</div>
             </div>
           </div>
+
+          <div className="metric">
+            <div className="icon" aria-hidden>📈</div>
+            <div className="meta">
+              <div className="label">Busiest day</div>
+              <div className="value">{busiestDay ? busiestDay.day : "—"}</div>
+            </div>
+          </div>
+
+          <div className="metric">
+            <div className="icon" aria-hidden>👤</div>
+            <div className="meta">
+              <div className="label">Top producer</div>
+              <div className="value">
+                {topProducer ? `${topProducer.producer} (${topProducer.count})` : "—"}
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* ---------- Line Items by Production Day (Recharts for reliability) ---------- */}
+      {/* ---------- Line Items by Production Day (solid) ---------- */}
       <section className="box">
         <div className="panel-title">Line Items by Production Day</div>
         <div className="chart">
           {itemsByDay.length ? (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={itemsByDay}>
-                <ChartDefs />
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="day" />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="count" fill="url(#barGradientA)" />
+                <Bar dataKey="count" fill="var(--accent-1)" />
               </BarChart>
             </ResponsiveContainer>
           ) : (
@@ -328,14 +332,13 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* ---------- Workload by Producer ---------- */}
+      {/* ---------- Workload by Producer (solid) ---------- */}
       <section className="box work">
         <div className="panel-title">Workload by Producer</div>
         <div className="chart">
           {workloadByProducer.length ? (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={workloadByProducer} margin={{ top: 8, right: 12, bottom: 48, left: 8 }}>
-                <ChartDefs />
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis
                   dataKey="producer"
@@ -348,7 +351,7 @@ const Home: React.FC = () => {
                 <YAxis />
                 <Tooltip />
                 <Legend wrapperStyle={{ display: "var(--legend-display)" }} />
-                <Bar dataKey="count" name="Tickets" fill="url(#barGradientB)" radius={[8, 8, 0, 0]} barSize={22} />
+                <Bar dataKey="count" name="Tickets" fill="var(--accent-3)" radius={[8, 8, 0, 0]} barSize={22} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
@@ -357,14 +360,13 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* ---------- Line Items by Event ---------- */}
+      {/* ---------- Line Items by Event (solid) ---------- */}
       <section className="box byEvt">
         <div className="panel-title">Line Items by Event</div>
         <div className="chart">
           {itemsByEvent.length ? (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={itemsByEvent} margin={{ top: 8, right: 12, bottom: 72, left: 8 }}>
-                <ChartDefs />
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis
                   dataKey="event"
@@ -377,7 +379,7 @@ const Home: React.FC = () => {
                 <YAxis />
                 <Tooltip />
                 <Legend wrapperStyle={{ display: "var(--legend-display)" }} />
-                <Bar dataKey="count" name="Items" fill="url(#barGradientA)" radius={[8, 8, 0, 0]} barSize={22} />
+                <Bar dataKey="count" name="Items" fill="var(--accent-2)" radius={[8, 8, 0, 0]} barSize={22} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
@@ -386,7 +388,7 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* ---------- Kosher Type Breakdown ---------- */}
+      {/* ---------- Kosher Type Breakdown (solid) ---------- */}
       <section className="box kosher">
         <div className="panel-title">Kosher Type Breakdown</div>
         <div className="chart">
@@ -395,7 +397,16 @@ const Home: React.FC = () => {
               <PieChart>
                 <Tooltip />
                 <Legend wrapperStyle={{ display: "var(--legend-display)" }} />
-                <Pie data={kosherBreakdown} dataKey="count" nameKey="kosherType" innerRadius={60} outerRadius={110} paddingAngle={2} stroke="#0e0e0e" strokeWidth={2}>
+                <Pie
+                  data={kosherBreakdown}
+                  dataKey="count"
+                  nameKey="kosherType"
+                  innerRadius={60}
+                  outerRadius={110}
+                  paddingAngle={2}
+                  stroke="#0e0e0e"
+                  strokeWidth={2}
+                >
                   {kosherBreakdown.map((_, i) => (
                     <Cell key={i} fill={pieColors[i % pieColors.length]} />
                   ))}
@@ -408,7 +419,7 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* ---------- Top Items by Qty (EA) ---------- */}
+      {/* ---------- Top Items by Qty (EA) (solid) ---------- */}
       <section className="box topEA">
         <div className="panel-title">Top Items by Qty (EA)</div>
         <div className="chart chart--tall">
@@ -421,7 +432,6 @@ const Home: React.FC = () => {
                 barCategoryGap={6}
                 barGap={2}
               >
-                <ChartDefs />
                 <CartesianGrid strokeDasharray="3 3" horizontal vertical={false} />
                 <XAxis type="number" />
                 <YAxis type="category" dataKey="itemShort" width={yAxisWidth} tickLine={false} />
@@ -434,7 +444,7 @@ const Home: React.FC = () => {
                   labelFormatter={() => ""}
                 />
                 <Legend wrapperStyle={{ display: "var(--legend-display)" }} />
-                <Bar dataKey="qty" name="Qty" fill="url(#barGradientB)" radius={[0, 8, 8, 0]} maxBarSize={28} />
+                <Bar dataKey="qty" name="Qty" fill="var(--accent-4)" radius={[0, 8, 8, 0]} maxBarSize={28} />
               </BarChart>
             </ResponsiveContainer>
           ) : (

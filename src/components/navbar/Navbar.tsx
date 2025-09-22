@@ -1,25 +1,32 @@
+import React from "react";
 import "./navbar.scss";
+import { Search, Grid, Maximize2, Bell, Settings } from "lucide-react";
 
 const Navbar: React.FC = () => (
-  <div className="navbar">
+  <div className="navbar" role="navigation" aria-label="Top">
     <div className="logo">
-      <span>Preppery</span>
+      <span>PrepDeck</span>
     </div>
-    <div className="icons">
-      <img src="/search.svg" alt="Search" className="icon" />
-      <img src="/app.svg" alt="App" className="icon" />
-      <img src="/expand.svg" alt="Expand" className="icon" />
-      <div className="notification">
-        <img src="/notifications.svg" alt="Notifications" className="icon" />
+
+    <div className="icons" aria-label="Actions">
+      <Search className="icon" aria-label="Search" />
+      <Grid className="icon" aria-label="Apps" />
+      <Maximize2 className="icon" aria-label="Expand" />
+
+      <div className="notification" aria-live="polite">
+        <Bell className="icon" aria-label="Notifications" />
         <span>1</span>
       </div>
+
       <div className="user">
         <img
           src="https://images.pexels.com/photos/11038549/pexels-photo-11038549.jpeg"
-          alt=""
+          alt="User avatar"
+          loading="lazy"
         />
       </div>
-      <img src="/settings.svg" alt="Settings" className="icon" />
+
+      <Settings className="icon" aria-label="Settings" />
     </div>
   </div>
 );

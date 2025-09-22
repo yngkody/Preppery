@@ -1,8 +1,8 @@
 :root {
-  --bg: #121212;
-  --card: #1b1b1b;
+  --bg: #ffffff;
+  --card: #ffffff;
   --muted: #2a2a2a;
-  --text: #ffffff;
+  --text: #000000;
   --subtle: #a9a9a9;
   --accent-1: #6ee7b7;
   --accent-2: #93c5fd;
@@ -21,7 +21,7 @@ body { background: var(--bg); color: var(--text); margin: 0; font-family: Inter,
 .box {
   background: var(--card);
   border: 1px solid var(--muted);
-  border-radius: 16px;
+  border-radius: 4px;
   padding: 14px;
 }
 .box.empty { text-align: center; padding: 20px; }
@@ -33,7 +33,7 @@ body { background: var(--bg); color: var(--text); margin: 0; font-family: Inter,
 
 .metric {
   display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: center;
-  border: 1px solid var(--muted); border-radius: 14px; padding: 12px;
+  border: 1px solid var(--muted); border-radius: 4px; padding: 12px;
 }
 .metric .icon { font-size: 20px; }
 .metric .meta .label { font-size: 12px; color: var(--subtle); }
